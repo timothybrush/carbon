@@ -130,7 +130,7 @@ export class InteractionTestRunner {
 		}
 		return {
 			id: options.id ?? this.id(undefined, testInteractionId),
-			application_id: this.client.options.clientId,
+			application_id: this.client.clientId,
 			type: autocomplete
 				? InteractionType.ApplicationCommandAutocomplete
 				: InteractionType.ApplicationCommand,
@@ -169,7 +169,7 @@ export class InteractionTestRunner {
 		}
 		return {
 			id: this.id(undefined, testInteractionId),
-			application_id: this.client.options.clientId,
+			application_id: this.client.clientId,
 			type: InteractionType.MessageComponent,
 			data,
 			message: message ?? this.blankMessage(channelId ?? testChannelId),
@@ -194,7 +194,7 @@ export class InteractionTestRunner {
 		)
 		return {
 			id: this.id(undefined, testInteractionId),
-			application_id: this.client.options.clientId,
+			application_id: this.client.clientId,
 			type: InteractionType.ModalSubmit,
 			data: {
 				custom_id: options.customId ?? "modal",

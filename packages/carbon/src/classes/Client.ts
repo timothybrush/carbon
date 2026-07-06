@@ -41,6 +41,7 @@ import type {
 } from "../types/testHooks.js"
 import {
 	concatUint8Arrays,
+	deriveClientIdFromBotToken,
 	subtleCrypto,
 	valueToUint8Array
 } from "../utils/index.js"
@@ -52,6 +53,11 @@ import {
 } from "./RequestClient.js"
 
 /**
+ * @deprecated Use string[] for additional public keys. The string form will be removed in the next major version.
+ */
+export type LegacyPublicKey = string
+
+/**
  * The options used for initializing the client
  */
 export interface ClientOptions {
@@ -60,18 +66,20 @@ export interface ClientOptions {
 	 */
 	baseUrl: string
 	/**
-	 * The client ID of the app
+	 * The client ID of the app.
+	 * @deprecated Will be removed in the next major version.
 	 */
-	clientId: string
+	clientId?: string
 	/**
 	 * The deploy secret of the app, used for protecting the deploy route
 	 */
 	deploySecret?: string
 	/**
-	 * The public key of the app, used for interaction verification
-	 * Can be a single key or an array of keys
+	 * Public key configuration used for interaction verification.
+	 * Omit this to let Carbon fetch the app public key on boot.
+	 * Passing an array supports additional public keys, such as forwarders.
 	 */
-	publicKey: string | string[]
+	publicKey?: LegacyPublicKey | string[]
 	/**
 	 * The token of the bot
 	 */
@@ -151,6 +159,14 @@ export class Client {
 	 */
 	options: ClientOptions
 	/**
+	 * The resolved client ID for this application.
+	 */
+	clientId: string
+	/**
+	 * The resolved public key configuration for this application.
+	 */
+	publicKey?: LegacyPublicKey | string[]
+	/**
 	 * The commands that the client has registered
 	 */
 	commands: BaseCommand[]
@@ -166,6 +182,10 @@ export class Client {
 	 * The rest client used to interact with the Discord API
 	 */
 	rest: RequestClient
+	/**
+	 * Resolves once Carbon has fetched any boot-time application metadata.
+	 */
+	readonly ready: Promise<void>
 	/**
 	 * Opt-in entity cache manager.
 	 */
@@ -225,20 +245,34 @@ export class Client {
 		},
 		plugins: Plugin[] = []
 	) {
-		if (!options.clientId) throw new Error("Missing client ID")
-		if (!options.publicKey) throw new Error("Missing public key")
 		if (!options.token) throw new Error("Missing token")
 		if (!options.deploySecret && !options.disableDeployRoute)
 			throw new Error("Missing deploy secret")
 
+		const clientId =
+			options.clientId ?? deriveClientIdFromBotToken(options.token)
 		const runtimeProfile = options.runtimeProfile ?? "serverless"
+		this.clientId = clientId
+		this.publicKey = options.publicKey
 		this.options = {
 			...options,
+			clientId,
 			runtimeProfile,
 			eventQueue: {
 				runtimeProfile,
 				...options.eventQueue
 			}
+		}
+
+		if (options.clientId) {
+			console.warn(
+				"[Carbon] Passing clientId is deprecated and will be removed in the next major version. Omit clientId to derive it from the bot token."
+			)
+		}
+		if (typeof options.publicKey === "string") {
+			console.warn(
+				"[Carbon] Passing publicKey as a string is deprecated and will be removed in the next major version. Omit publicKey to fetch the app public key, or pass string[] for additional forwarder public keys."
+			)
 		}
 		this.commands = handlers.commands ?? []
 		this.commandMiddlewares = options.commandMiddlewares ?? []
@@ -272,6 +306,10 @@ export class Client {
 			testHooks: this.options.testHooks,
 			...this.options.requestOptions
 		})
+		this.ready = this.initializeApplication()
+		void this.ready.catch((error) => {
+			console.error("[Carbon] Failed to initialize client", error)
+		})
 
 		this.appendRoutes()
 		for (const plugin of plugins) {
@@ -281,8 +319,28 @@ export class Client {
 		}
 
 		if (this.options.autoDeploy) {
-			this.deployCommands()
+			void this.ready
+				.then(() => this.deployCommands())
+				.catch((error) => {
+					console.error("[Carbon] Failed to auto-deploy commands", error)
+				})
 		}
+	}
+
+	protected async initializeApplication() {
+		if (typeof this.publicKey === "string") return
+
+		const application = (await this.rest.get(Routes.currentApplication())) as {
+			public_key?: string
+		}
+		if (!application.public_key) {
+			throw new Error("Discord application did not return a public key")
+		}
+
+		this.publicKey = Array.isArray(this.publicKey)
+			? [application.public_key, ...this.publicKey]
+			: application.public_key
+		this.options.publicKey = this.publicKey
 	}
 
 	public getPlugin<T extends Plugin>(id: string): T | undefined {
@@ -395,7 +453,7 @@ export class Client {
 			)
 			for (const guildId of this.options.devGuilds) {
 				const deployed = (await this.rest.put(
-					Routes.applicationGuildCommands(this.options.clientId, guildId),
+					Routes.applicationGuildCommands(this.clientId, guildId),
 					{ body: devGuildCommands.map((c) => c.serialize()) }
 				)) as APIApplicationCommand[]
 				this.updateCommandIdsFromDeployment(deployed)
@@ -406,7 +464,7 @@ export class Client {
 			)
 			if (primaryEntryPointCommands.length > 0) {
 				const deployed = (await this.rest.put(
-					Routes.applicationCommands(this.options.clientId),
+					Routes.applicationCommands(this.clientId),
 					{
 						body: primaryEntryPointCommands.map((command) =>
 							command.serialize()
@@ -426,7 +484,7 @@ export class Client {
 		// Deploy guild-specific commands
 		for (const [guildId, cmds] of Object.entries(guildCommandsMap)) {
 			const deployed = (await this.rest.put(
-				Routes.applicationGuildCommands(this.options.clientId, guildId),
+				Routes.applicationGuildCommands(this.clientId, guildId),
 				{ body: cmds }
 			)) as APIApplicationCommand[]
 			this.updateCommandIdsFromDeployment(deployed)
@@ -437,7 +495,7 @@ export class Client {
 			await this.reconcileGlobalCommands(globalCommands)
 		} else if (globalCommands.length > 0) {
 			const deployed = (await this.rest.put(
-				Routes.applicationCommands(this.options.clientId),
+				Routes.applicationCommands(this.clientId),
 				{
 					body: globalCommands.map((c) => c.serialize())
 				}
@@ -471,7 +529,7 @@ export class Client {
 			return new Response(null, { status: 204 })
 
 		const enqueued = this.eventHandler.handleEvent(
-			{ ...(payload.event.data ?? {}), clientId: this.options.clientId },
+			{ ...(payload.event.data ?? {}), clientId: this.clientId },
 			payload.event.type
 		)
 
@@ -546,14 +604,15 @@ export class Client {
 		if (!timestamp || !signature || req.method !== "POST" || !body) return false
 
 		try {
+			await this.ready
 			const timestampData = valueToUint8Array(timestamp)
 			const bodyData = valueToUint8Array(body)
 			const message = concatUint8Arrays(timestampData, bodyData)
 
 			// Convert single key to array for consistent handling
-			const publicKeys = Array.isArray(this.options.publicKey)
-				? this.options.publicKey
-				: [this.options.publicKey]
+			const publicKeys = (
+				Array.isArray(this.publicKey) ? this.publicKey : [this.publicKey]
+			).filter((publicKey) => typeof publicKey === "string")
 
 			// Try each public key until one works
 			for (const publicKey of publicKeys) {
@@ -720,7 +779,7 @@ export class Client {
 			return this.cachedGlobalCommands
 		}
 		const commands = (await this.rest.get(
-			Routes.applicationCommands(this.options.clientId)
+			Routes.applicationCommands(this.clientId)
 		)) as APIApplicationCommand[]
 		this.cachedGlobalCommands = commands
 		this.updateCommandIdsFromDeployment(commands)
@@ -837,7 +896,7 @@ export class Client {
 		}
 
 		const liveCommands = (await this.rest.get(
-			Routes.applicationCommands(this.options.clientId)
+			Routes.applicationCommands(this.clientId)
 		)) as APIApplicationCommand[]
 		const liveByKey = new Map(
 			liveCommands.map((command) => [
@@ -857,9 +916,7 @@ export class Client {
 				continue
 			}
 
-			await this.rest.delete(
-				Routes.applicationCommand(this.options.clientId, live.id)
-			)
+			await this.rest.delete(Routes.applicationCommand(this.clientId, live.id))
 			liveByKey.delete(key)
 		}
 
@@ -874,7 +931,7 @@ export class Client {
 			}
 
 			const updated = (await this.rest.patch(
-				Routes.applicationCommand(this.options.clientId, existing.id),
+				Routes.applicationCommand(this.clientId, existing.id),
 				{ body: desired.body }
 			)) as APIApplicationCommand
 			liveByKey.set(desired.key, updated)
@@ -884,7 +941,7 @@ export class Client {
 			if (liveByKey.has(desired.key)) continue
 
 			const created = (await this.rest.post(
-				Routes.applicationCommands(this.options.clientId),
+				Routes.applicationCommands(this.clientId),
 				{ body: desired.body }
 			)) as APIApplicationCommand
 			liveByKey.set(desired.key, created)

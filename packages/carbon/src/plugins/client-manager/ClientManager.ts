@@ -1,6 +1,11 @@
 import { Routes } from "discord-api-types/v10"
 import type { Context, Route } from "../../abstracts/Plugin.js"
-import { Client, type ClientOptions } from "../../classes/Client.js"
+import {
+	Client,
+	type ClientOptions,
+	type LegacyPublicKey
+} from "../../classes/Client.js"
+import { deriveClientIdFromBotToken } from "../../utils/index.js"
 
 /**
  * Credentials for a single application in the ClientManager
@@ -8,13 +13,14 @@ import { Client, type ClientOptions } from "../../classes/Client.js"
 export interface ApplicationCredentials {
 	/**
 	 * The client ID of the application - must be a valid Discord snowflake
+	 * @deprecated Will be removed in the next major version.
 	 */
-	clientId: string
+	clientId?: string
 	/**
 	 * The public key of the app, used for interaction verification
 	 * Can be a single key or an array of keys
 	 */
-	publicKey: string | string[]
+	publicKey?: LegacyPublicKey | string[]
 	/**
 	 * The token of the bot
 	 */
@@ -197,24 +203,21 @@ export class ClientManager {
 					nextIndex += 1
 					if (!application) return
 
+					const clientId = application.clientId ?? "unknown"
 					try {
-						await this.setupClient(
-							{
-								clientId: application.clientId,
-								publicKey: application.publicKey,
-								token: application.token
-							},
+						const client = await this.setupClient(
+							application,
 							initialSetupOptions
 						)
 						results.push({
-							clientId: application.clientId,
+							clientId: client.clientId,
 							status: "success"
 						})
 					} catch (error) {
 						const message =
 							error instanceof Error ? error.message : String(error)
 						results.push({
-							clientId: application.clientId,
+							clientId,
 							status: "error",
 							error: message
 						})
@@ -266,28 +269,30 @@ export class ClientManager {
 			setEventsUrlOnDevPortal: false
 		}
 	): Promise<Client> {
-		const existing = this.getClient(credentials.clientId)
+		const clientId =
+			credentials.clientId ?? deriveClientIdFromBotToken(credentials.token)
+		const existing = this.getClient(clientId)
 		if (existing && !options.recreate) {
 			throw new Error(
-				`Client ${credentials.clientId} already exists. If you want to recreate it, pass true to the recreate parameter.`
+				`Client ${clientId} already exists. If you want to recreate it, pass true to the recreate parameter.`
 			)
 		}
 
 		if (existing && options.recreate) {
-			this.clients.delete(credentials.clientId)
+			this.clients.delete(clientId)
 		}
 
-		if (!this.isValidClientId(credentials.clientId)) {
+		if (!this.isValidClientId(clientId)) {
 			throw new Error(
-				`Invalid client ID: ${credentials.clientId}. Client ID must be a valid Discord snowflake (17-19 digits).`
+				`Invalid client ID: ${clientId}. Client ID must be a valid Discord snowflake (17-19 digits).`
 			)
 		}
 
 		const clientOptions: ClientOptions = {
 			...this.sharedOptions,
-			baseUrl: `${this.baseUrl}/${credentials.clientId}`,
+			baseUrl: `${this.baseUrl}/${clientId}`,
 			deploySecret: this.deploySecret,
-			clientId: credentials.clientId,
+			...(credentials.clientId ? { clientId } : {}),
 			publicKey: credentials.publicKey,
 			token: credentials.token
 		}
@@ -297,7 +302,7 @@ export class ClientManager {
 			this.initialHandlers,
 			this.initialPlugins
 		)
-		this.clients.set(credentials.clientId, client)
+		this.clients.set(clientId, client)
 
 		if (
 			options.setInteractionsUrlOnDevPortal ||
@@ -306,10 +311,10 @@ export class ClientManager {
 			await client.rest.patch(Routes.currentApplication(), {
 				body: {
 					interactions_endpoint_url: options.setInteractionsUrlOnDevPortal
-						? `${this.baseUrl}/${credentials.clientId}/interactions`
+						? `${this.baseUrl}/${clientId}/interactions`
 						: undefined,
 					event_webhooks_url: options.setEventsUrlOnDevPortal
-						? `${this.baseUrl}/${credentials.clientId}/events`
+						? `${this.baseUrl}/${clientId}/events`
 						: undefined
 				}
 			})
@@ -488,7 +493,11 @@ export class ClientManager {
 	async getApplication(
 		clientId: string
 	): Promise<ApplicationCredentials | undefined> {
-		return this.staticApplications.find((app) => app.clientId === clientId)
+		for (const application of this.staticApplications) {
+			const applicationClientId =
+				application.clientId ?? deriveClientIdFromBotToken(application.token)
+			if (applicationClientId === clientId) return application
+		}
 	}
 
 	/**

@@ -57,12 +57,8 @@ const client = new Client(
 	{
 		baseUrl: process.env.BASE_URL,
 		deploySecret: process.env.DEPLOY_SECRET,
-		clientId: process.env.DISCORD_CLIENT_ID,
 		clientSecret: process.env.DISCORD_CLIENT_SECRET,
-		publicKey: [
-			process.env.DISCORD_PUBLIC_KEY,
-			process.env.FORWARDER_PUBLIC_KEY
-		], // Receiving from pointo
+		publicKey: [process.env.FORWARDER_PUBLIC_KEY], // Receiving from pointo
 		token: process.env.DISCORD_BOT_TOKEN
 	},
 	{
@@ -136,9 +132,7 @@ declare global {
 		interface ProcessEnv {
 			BASE_URL: string
 			DEPLOY_SECRET: string
-			DISCORD_CLIENT_ID: string
 			DISCORD_CLIENT_SECRET: string
-			DISCORD_PUBLIC_KEY: string
 			DISCORD_BOT_TOKEN: string
 			FORWARDER_PUBLIC_KEY: string // Receiving from pointo
 		}

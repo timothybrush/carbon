@@ -25,7 +25,7 @@ class MessageResponseHandler extends MessageCreateListener {
 			channelId: data.message.channelId,
 			targetChannelId: this.targetChannelId,
 			authorId: data.author.id,
-			clientId: client.options.clientId,
+			clientId: client.clientId,
 			content: data.content
 		})
 
@@ -33,7 +33,7 @@ class MessageResponseHandler extends MessageCreateListener {
 		if (
 			this.targetChannelId &&
 			data.message.channelId === this.targetChannelId &&
-			data.author.id !== client.options.clientId
+			data.author.id !== client.clientId
 		) {
 			// Clear the timeout since we got a response
 			if (this.timeout) {

@@ -5,6 +5,7 @@ import type {
 	ListenerEventRawData,
 	ListenerEventType
 } from "../../types/index.js"
+import { deriveClientIdFromBotToken } from "../../utils/index.js"
 import type {
 	CloudflareGatewayDurableObjectConfig,
 	CloudflareGatewayForwardPayload,
@@ -103,7 +104,7 @@ export class CloudflareGatewayPlugin extends Plugin {
 		const type = payload.type as ListenerEventType
 		const rawPayload = {
 			...payload.data,
-			clientId: this.client.options.clientId
+			clientId: this.client.clientId
 		} as ListenerEventRawData[ListenerEventType] & ListenerEventAdditionalData
 		const accepted = this.client.eventHandler.handleEvent(rawPayload, type)
 		if (!accepted) {
@@ -141,13 +142,14 @@ export class CloudflareGatewayPlugin extends Plugin {
 			processEnv?.DISCORD_BOT_TOKEN ??
 			(env.DISCORD_BOT_TOKEN as string | undefined) ??
 			""
-		const clientId =
+		const configuredClientId =
 			processEnv?.DISCORD_CLIENT_ID ??
 			(env.DISCORD_CLIENT_ID as string | undefined) ??
 			""
-		if (!baseUrl || !deploySecret || !token || !clientId) {
+		if (!baseUrl || !deploySecret || !token) {
 			return
 		}
+		const clientId = configuredClientId || deriveClientIdFromBotToken(token)
 
 		const config: CloudflareGatewayDurableObjectConfig = {
 			baseUrl,

@@ -220,7 +220,7 @@ export class GatewayForwarderPlugin extends GatewayPlugin {
 					const timestampString = timestamp.toString()
 					const webhookEvent: APIWebhookEvent = {
 						version: 1,
-						application_id: this.client?.options.clientId || "unknown",
+						application_id: this.client?.clientId || "unknown",
 						type: ApplicationWebhookType.Event,
 						event: {
 							type: forwardedType,

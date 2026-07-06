@@ -772,7 +772,7 @@ export class GatewayPlugin extends Plugin {
 				this.client.eventHandler.handleEvent(
 					{
 						...guildCreateData,
-						clientId: this.client.options.clientId
+						clientId: this.client.clientId
 					},
 					"GUILD_AVAILABLE"
 				)
@@ -791,7 +791,7 @@ export class GatewayPlugin extends Plugin {
 				this.client.eventHandler.handleEvent(
 					{
 						...guildDeleteData,
-						clientId: this.client.options.clientId
+						clientId: this.client.clientId
 					},
 					"GUILD_UNAVAILABLE"
 				)
@@ -804,7 +804,7 @@ export class GatewayPlugin extends Plugin {
 		}
 
 		this.client.eventHandler.handleEvent(
-			{ ...payload.d, clientId: this.client.options.clientId },
+			{ ...payload.d, clientId: this.client.clientId },
 			type
 		)
 	}

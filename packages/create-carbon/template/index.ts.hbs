@@ -89,11 +89,9 @@ export const client = new Client(
 	{
 		baseUrl: {{#if (eq runtime "deno")}}Deno.env.get("BASE_URL"){{else}}process.env.BASE_URL{{/if}},
 		deploySecret: {{#if (eq runtime "deno")}}Deno.env.get("DEPLOY_SECRET"){{else}}process.env.DEPLOY_SECRET{{/if}},
-		clientId: {{#if (eq runtime "deno")}}Deno.env.get("DISCORD_CLIENT_ID"){{else}}process.env.DISCORD_CLIENT_ID{{/if}},
 		{{#if plugins.linkedRoles}}
 		clientSecret: {{#if (eq runtime "deno")}}Deno.env.get("DISCORD_CLIENT_SECRET"){{else}}process.env.DISCORD_CLIENT_SECRET{{/if}},
 		{{/if}}
-		publicKey: {{#if (eq runtime "deno")}}Deno.env.get("DISCORD_PUBLIC_KEY"){{else}}process.env.DISCORD_PUBLIC_KEY{{/if}},
 		token: {{#if (eq runtime "deno")}}Deno.env.get("DISCORD_BOT_TOKEN"){{else}}process.env.DISCORD_BOT_TOKEN{{/if}},
 		devGuilds: {{#if (eq runtime "deno")}}Deno.env.get("DISCORD_DEV_GUILDS")?.split(","){{else}}process.env.DISCORD_DEV_GUILDS?.split(","){{/if}}, // Optional: comma-separated list of dev guild IDs
 	},
@@ -153,11 +151,9 @@ declare global {
 		interface ProcessEnv {
 			BASE_URL: string;
 			DEPLOY_SECRET: string;
-			DISCORD_CLIENT_ID: string;
 			{{#if plugins.linkedRoles}}
 			DISCORD_CLIENT_SECRET: string;
 			{{/if}}
-			DISCORD_PUBLIC_KEY: string;
 			DISCORD_BOT_TOKEN: string;
 		}
 	}

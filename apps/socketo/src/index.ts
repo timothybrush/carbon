@@ -27,8 +27,6 @@ const client = new Client(
 	{
 		baseUrl: process.env.BASE_URL,
 		deploySecret: process.env.DEPLOY_SECRET,
-		clientId: process.env.DISCORD_CLIENT_ID,
-		publicKey: process.env.DISCORD_PUBLIC_KEY,
 		token: process.env.DISCORD_BOT_TOKEN,
 		commandMiddlewares: [globalCommandMiddleware]
 	},
@@ -80,8 +78,6 @@ declare global {
 		interface ProcessEnv {
 			BASE_URL: string
 			DEPLOY_SECRET: string
-			DISCORD_CLIENT_ID: string
-			DISCORD_PUBLIC_KEY: string
 			DISCORD_BOT_TOKEN: string
 		}
 	}

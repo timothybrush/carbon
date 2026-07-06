@@ -7,8 +7,6 @@ import {
 new Client(
 	{
 		baseUrl: process.env.BASE_URL,
-		clientId: process.env.DISCORD_CLIENT_ID,
-		publicKey: process.env.DISCORD_PUBLIC_KEY,
 		token: process.env.DISCORD_BOT_TOKEN,
 		disableDeployRoute: true,
 		disableEventsRoute: true,
@@ -35,8 +33,6 @@ declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
 			BASE_URL: string
-			DISCORD_CLIENT_ID: string
-			DISCORD_PUBLIC_KEY: string
 			DISCORD_BOT_TOKEN: string
 			FORWARDER_PUBLIC_KEY: string
 			FORWARDER_PRIVATE_KEY: string

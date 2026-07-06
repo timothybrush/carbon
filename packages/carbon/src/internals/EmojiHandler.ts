@@ -8,23 +8,18 @@ import { ApplicationEmoji } from "../structures/Emoji.js"
 export class EmojiHandler extends Base {
 	public async list() {
 		const emojis = (await this.client.rest.get(
-			Routes.applicationEmojis(this.client.options.clientId)
+			Routes.applicationEmojis(this.client.clientId)
 		)) as { items: APIApplicationEmoji[] }
 		return emojis.items.map(
-			(emoji) =>
-				new ApplicationEmoji(this.client, emoji, this.client.options.clientId)
+			(emoji) => new ApplicationEmoji(this.client, emoji, this.client.clientId)
 		)
 	}
 
 	public async get(id: string) {
 		const emoji = (await this.client.rest.get(
-			Routes.applicationEmoji(this.client.options.clientId, id)
+			Routes.applicationEmoji(this.client.clientId, id)
 		)) as APIApplicationEmoji
-		return new ApplicationEmoji(
-			this.client,
-			emoji,
-			this.client.options.clientId
-		)
+		return new ApplicationEmoji(this.client, emoji, this.client.clientId)
 	}
 
 	public async getByName(name: string) {
@@ -40,19 +35,15 @@ export class EmojiHandler extends Base {
 	 */
 	public async create(name: string, image: string) {
 		const emoji = (await this.client.rest.post(
-			Routes.applicationEmojis(this.client.options.clientId),
+			Routes.applicationEmojis(this.client.clientId),
 			{ body: { name, image } }
 		)) as APIApplicationEmoji
-		return new ApplicationEmoji(
-			this.client,
-			emoji,
-			this.client.options.clientId
-		)
+		return new ApplicationEmoji(this.client, emoji, this.client.clientId)
 	}
 
 	public async delete(id: string) {
 		await this.client.rest.delete(
-			Routes.applicationEmoji(this.client.options.clientId, id)
+			Routes.applicationEmoji(this.client.clientId, id)
 		)
 	}
 }

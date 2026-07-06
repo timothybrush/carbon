@@ -182,7 +182,7 @@ export abstract class BaseInteraction<T extends APIInteraction> extends Base {
 			})
 			const message = (await this.client.rest.patch(
 				Routes.webhookMessage(
-					this.client.options.clientId,
+					this.client.clientId,
 					this._rawData.token,
 					"@original"
 				),
@@ -315,7 +315,7 @@ export abstract class BaseInteraction<T extends APIInteraction> extends Base {
 			body
 		})
 		await this.client.rest.post(
-			Routes.webhook(this.client.options.clientId, this._rawData.token),
+			Routes.webhook(this.client.clientId, this._rawData.token),
 			{
 				body
 			}

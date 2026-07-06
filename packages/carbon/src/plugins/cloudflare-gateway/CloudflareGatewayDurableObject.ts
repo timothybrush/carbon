@@ -164,6 +164,7 @@ export class CloudflareGatewayDurableObject {
 
 	protected createClientBridge(config: CloudflareGatewayDurableObjectConfig) {
 		return {
+			clientId: config.clientId,
 			options: {
 				token: config.token,
 				clientId: config.clientId

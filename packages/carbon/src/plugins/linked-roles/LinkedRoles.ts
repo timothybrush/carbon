@@ -118,7 +118,7 @@ export class LinkedRoles extends Plugin {
 		return new Response("Found", {
 			status: 302,
 			headers: {
-				Location: `https://discord.com/oauth2/authorize?client_id=${this.client.options.clientId}&redirect_uri=${encodeURIComponent(`${this.client.options.baseUrl}/linked-roles/verify-user/callback`)}&response_type=code&scope=identify+role_connections.write&prompt=none`
+				Location: `https://discord.com/oauth2/authorize?client_id=${this.client.clientId}&redirect_uri=${encodeURIComponent(`${this.client.options.baseUrl}/linked-roles/verify-user/callback`)}&response_type=code&scope=identify+role_connections.write&prompt=none`
 			}
 		})
 	}
@@ -196,7 +196,7 @@ export class LinkedRoles extends Plugin {
 
 		const url = "https://discord.com/api/v10/oauth2/token"
 		const body = new URLSearchParams({
-			client_id: this.client.options.clientId,
+			client_id: this.client.clientId,
 			client_secret: this.client.options.clientSecret,
 			grant_type: "authorization_code",
 			code,
@@ -228,7 +228,7 @@ export class LinkedRoles extends Plugin {
 	) {
 		this.assertRegistered()
 
-		const url = `https://discord.com/api/v10/users/@me/applications/${this.client.options.clientId}/role-connection`
+		const url = `https://discord.com/api/v10/users/@me/applications/${this.client.clientId}/role-connection`
 		const response = await fetch(url, {
 			method: "PUT",
 			body: JSON.stringify({ metadata }),
@@ -250,7 +250,7 @@ export class LinkedRoles extends Plugin {
 		this.assertRegistered()
 
 		const response = await fetch(
-			`https://discord.com/api/v10/applications/${this.client.options.clientId}/role-connections/metadata`,
+			`https://discord.com/api/v10/applications/${this.client.clientId}/role-connections/metadata`,
 			{
 				method: "PUT",
 				body: JSON.stringify(data),

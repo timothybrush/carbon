@@ -35,7 +35,7 @@ export class CommandDataPlugin extends Plugin {
 			return new Response("Client not registered", { status: 500 })
 		if (this.discordCommandData) return Response.json(this.discordCommandData)
 		const commands = (await this.client.rest.get(
-			Routes.applicationCommands(this.client.options.clientId)
+			Routes.applicationCommands(this.client.clientId)
 		)) as APIApplicationCommand[]
 		this.discordCommandData = commands
 		return Response.json(commands)
