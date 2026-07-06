@@ -47,7 +47,7 @@ export interface EventQueueOptions {
 	yieldIntervalMs?: number
 	/**
 	 * Whether to log slow listeners
-	 * @default true
+	 * @default false
 	 */
 	logSlowListeners?: boolean
 	/**
@@ -250,7 +250,7 @@ export class EventQueue {
 				}
 			},
 			yieldIntervalMs: options.yieldIntervalMs ?? 0,
-			logSlowListeners: options.logSlowListeners ?? true,
+			logSlowListeners: options.logSlowListeners ?? false,
 			slowListenerThreshold: options.slowListenerThreshold ?? 1000
 		}
 	}
