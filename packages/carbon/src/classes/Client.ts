@@ -332,14 +332,16 @@ export class Client {
 
 		const application = (await this.rest.get(Routes.currentApplication())) as {
 			public_key?: string
+			verify_key?: string
 		}
-		if (!application.public_key) {
+		const publicKey = application.public_key ?? application.verify_key
+		if (!publicKey) {
 			throw new Error("Discord application did not return a public key")
 		}
 
 		this.publicKey = Array.isArray(this.publicKey)
-			? [application.public_key, ...this.publicKey]
-			: application.public_key
+			? [publicKey, ...this.publicKey]
+			: publicKey
 		this.options.publicKey = this.publicKey
 	}
 

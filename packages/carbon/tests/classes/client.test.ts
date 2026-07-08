@@ -190,6 +190,29 @@ function createClient(
 	return { client, ...harness }
 }
 
+class TestClient extends Client {
+	public initializeApplicationForTest() {
+		return this.initializeApplication()
+	}
+}
+
+describe("Client application initialization", () => {
+	test("uses verify_key when Discord omits public_key", async () => {
+		const client = new TestClient(defaultClientOptions, {}, [])
+		const rest = {
+			get: vi.fn(async () => ({ verify_key: "verify-key" }))
+		}
+		client.publicKey = undefined
+		client.rest = rest as never
+
+		await client.initializeApplicationForTest()
+
+		expect(rest.get).toHaveBeenCalledWith(Routes.currentApplication())
+		expect(client.publicKey).toBe("verify-key")
+		expect(client.options.publicKey).toBe("verify-key")
+	})
+})
+
 describe("Client command deployment", () => {
 	test("reconciles global commands while keeping guild-scoped commands on bulk overwrite", async () => {
 		const globalCommand = createCommand({
