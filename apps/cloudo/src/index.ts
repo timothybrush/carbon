@@ -23,6 +23,19 @@ import SubcommandGroupsCommand from "./commands/testing/subcommandgroup.js"
 import UserCommand from "./commands/testing/user_command.js"
 import ApplicationAuthorized from "./events/authorized.js"
 
+declare global {
+	var process: { env: NodeJS.ProcessEnv }
+
+	namespace NodeJS {
+		interface ProcessEnv {
+			BASE_URL: string
+			DEPLOY_SECRET: string
+			DISCORD_CLIENT_SECRET: string
+			DISCORD_BOT_TOKEN: string
+		}
+	}
+}
+
 const linkedRoles = new LinkedRoles({
 	metadata: [
 		{
@@ -91,14 +104,3 @@ const client = new Client(
 
 const handler = createHandler(client)
 export default { fetch: handler }
-
-declare global {
-	namespace NodeJS {
-		interface ProcessEnv {
-			BASE_URL: string
-			DEPLOY_SECRET: string
-			DISCORD_CLIENT_SECRET: string
-			DISCORD_BOT_TOKEN: string
-		}
-	}
-}

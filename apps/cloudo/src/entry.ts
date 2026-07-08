@@ -1,4 +1,6 @@
-import type { ExecutionContext, Request } from "@cloudflare/workers-types"
+type ExecutionContext = {
+	waitUntil(promise: Promise<unknown>): void
+}
 
 export default {
 	async fetch(req: Request, env: unknown, ctx: ExecutionContext) {

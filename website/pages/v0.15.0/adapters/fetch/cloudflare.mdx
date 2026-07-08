@@ -47,7 +47,9 @@ export default { fetch: handler }
 To access environment variables globally in a Cloudflare Worker, Carbon uses a workaround by assigning the `process.env` object to the `globalThis` object before importing the main handler file. This approach allows you to access environment variables at the top level of your handler file, something that is not normally possible in Cloudflare Workers.
 
 ```ts title="src/entry.ts"
-import type { ExecutionContext } from '@cloudflare/workers-types'
+type ExecutionContext = {
+	waitUntil(promise: Promise<unknown>): void
+}
 
 export default {
 	fetch(req: Request, env: Record<string, string>, ctx: ExecutionContext) {
