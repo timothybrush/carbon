@@ -5,8 +5,8 @@
 	"main": "./dist/index.js",
 	"scripts": {
 		"build": "tsc",
-		"dev": "pnpm build && node --watch --env-file-if-exists=.env .",
-		"start": "node --env-file-if-exists=.env ."
+		"dev": "pnpm build && node --watch --env-file-if-exists=../../.env .",
+		"start": "node --env-file-if-exists=../../.env ."
 	},
 	"dependencies": {
 		"@buape/carbon": "workspace:*"
