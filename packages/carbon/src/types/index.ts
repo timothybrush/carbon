@@ -8,7 +8,9 @@ import type {
 	APIModalComponent,
 	APIModalInteractionResponseCallbackData,
 	APITextDisplayComponent,
-	ApplicationCommandOptionType
+	ApplicationCommandOptionType,
+	ChannelType,
+	Permissions
 } from "discord-api-types/v10"
 import type { BaseComponentInteraction } from "../abstracts/BaseComponentInteraction.js"
 import type { BaseMessageInteractiveComponent } from "../abstracts/BaseMessageInteractiveComponent.js"
@@ -234,6 +236,17 @@ declare module "discord-api-types/v10" {
 		| APICheckboxActionComponent
 		| APICheckboxGroupActionComponent
 		| APIRadioGroupActionComponent
+
+	export interface APIInteractionDataResolvedChannelBase<
+		T extends ChannelType
+	> {
+		/**
+		 * Bitwise set of permissions the app's bot user has in this resolved channel.
+		 *
+		 * Only present when the application's bot user is in the guild.
+		 */
+		app_permissions?: Permissions
+	}
 
 	export interface APIFileUploadComponent {
 		file_types?: FileTypeFilter[]
