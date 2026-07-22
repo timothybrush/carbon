@@ -184,7 +184,7 @@ export class GuildMember<
 
 	async getVoiceState(): Promise<VoiceState | null> {
 		const voiceState = (await this.client.rest.get(
-			`/guilds/${this.guild.id}/members/${this.user.id}/voice`
+			Routes.guildVoiceState(this.guild.id, this.user.id)
 		)) as APIVoiceState
 		if (!voiceState) return null
 
