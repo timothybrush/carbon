@@ -11,12 +11,12 @@ If you have a one-off embed that doesn't need its own class, you can directly us
 
 ```ts
 const testEmbed = new Embed({
-		title: "Embed Test",
-		description: "This is an embed test",
-		url: "https://buape.com"
+	title: "Embed Test",
+	description: "This is an embed test",
+	url: "https://buape.com"
 })
 message.reply({
-		embeds: [testEmbed]
+	embeds: [testEmbed]
 })
 ```
 
@@ -41,40 +41,40 @@ Here is an example embed with all the properties you can use:
 
 ```ts
 class TestEmbed extends Embed {
-		title = "Embed Test"
-		description = "This is an embed test"
-		url = "https://carbon.buape.com"
-		timestamp = new Date().toString()
-		color = 16711680;
-		image = "https://cdn.buape.com/carbon/wordmark.png";
-		thumbnail = "https://cdn.buape.com/carbon/logo.png";
-		author = {
-				name: "Author Name",
-				icon: "https://buape.com",
-		};
-		fields = [
-				{
-						name: "Field 1",
-						value: "Value 1",
-						inline: true,
-				},
-				{
-						name: "Field 2",
-						value: "Value 2",
-						inline: true,
-				},
-		];
+	title = "Embed Test"
+	description = "This is an embed test"
+	url = "https://carbon.buape.com"
+	timestamp = new Date().toString()
+	color = 16711680;
+	image = "https://cdn.buape.com/carbon/wordmark.png";
+	thumbnail = "https://cdn.buape.com/carbon/logo.png";
+	author = {
+		name: "Author Name",
+		icon: "https://buape.com",
+	};
+	fields = [
+		{
+			name: "Field 1",
+			value: "Value 1",
+			inline: true,
+		},
+		{
+			name: "Field 2",
+			value: "Value 2",
+			inline: true,
+		},
+	];
 
-		constructor(footerText: string) {
-				this.footer = {
-						text: footerText,
-						icon: "https://cdn.buape.com/carbon/logo.png",
-				};
-		}
+	constructor(footerText: string) {
+		this.footer = {
+			text: footerText,
+			icon: "https://cdn.buape.com/carbon/logo.png",
+		};
+	}
 }
 
 const embedToSend = new TestEmbed("This is the custom footer")
 message.reply({
-		embeds: [embedToSend]
+	embeds: [embedToSend]
 })
 ```

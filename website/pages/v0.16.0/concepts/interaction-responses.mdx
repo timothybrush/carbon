@@ -11,7 +11,7 @@ This is the simplest way to respond to an interaction and is used for most comma
 
 ```ts
 async run(interaction: CommandInteraction) {
-		await interaction.reply({ content: "Hello, world!" })
+	await interaction.reply({ content: "Hello, world!" })
 }
 ```
 
@@ -21,9 +21,9 @@ Deferring is used when you need more time to process an interaction. When you de
 
 ```ts
 async run(interaction: CommandInteraction) {
-		await interaction.defer()
-		// perform a time-consuming task
-		await interaction.reply({ content: "Hello, world!" })
+	await interaction.defer()
+	// perform a time-consuming task
+	await interaction.reply({ content: "Hello, world!" })
 }
 ```
 
@@ -33,6 +33,6 @@ Acknowledging is used when you want to acknowledge an interaction without replyi
 
 ```ts
 async run(interaction: ButtonInteraction) {
-		await interaction.acknowledge()
+	await interaction.acknowledge()
 }
 ```

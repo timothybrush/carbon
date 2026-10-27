@@ -29,62 +29,62 @@ Here are some snippets from the original version of the bot:
 
 ```ts
 abstract class BaseCommand {
-		abstract name: string;
-		abstract description: string;
-		abstract guildOnly?: boolean;
-		abstract defer?: boolean;
+	abstract name: string;
+	abstract description: string;
+	abstract guildOnly?: boolean;
+	abstract defer?: boolean;
 }
 
 export abstract class Command extends BaseCommand {
-		abstract run(
-				interaction: APIApplicationCommandInteraction,
-				env: Env
-		): Promise<APIInteractionResponse | undefined>;
+	abstract run(
+		interaction: APIApplicationCommandInteraction,
+		env: Env
+	): Promise<APIInteractionResponse | undefined>;
 }
 
 export abstract class CommandWithOptions extends Command {
-		abstract options: APIApplicationCommandBasicOption[];
+	abstract options: APIApplicationCommandBasicOption[];
 }
 
 export abstract class CommandWithAutocomplete extends CommandWithOptions {
-		abstract autocomplete(
-				interaction: APIApplicationCommandAutocompleteInteraction,
-				env: Env
-		): Promise<APIApplicationCommandAutocompleteResponse | undefined>;
+	abstract autocomplete(
+		interaction: APIApplicationCommandAutocompleteInteraction,
+		env: Env
+	): Promise<APIApplicationCommandAutocompleteResponse | undefined>;
 }
 ```
 
 ```ts
 export default class Cmd implements CommandWithSubcommands {
-		name = "staff";
-		description = "Staff management commands";
-		guildOnly = true;
+	name = "staff";
+	description = "Staff management commands";
+	guildOnly = true;
 
-		subcommands = [
-				new AddStaff(),
-				new RemoveStaff(),
-				new SyncStaff(),
-				new SetTimeZone(),
-		];
+	subcommands = [
+		new AddStaff(),
+		new RemoveStaff(),
+		new SyncStaff(),
+		new SetTimeZone(),
+	];
 }
 
 class SyncStaff implements Command {
-		name = "sync";
-		description = "Sync staff roles with the database";
-		defer = true;
+	name = "sync";
+	description = "Sync staff roles with the database";
+	defer = true;
 
-		async run(
-				_interaction: APIApplicationCommandInteraction,
-				env: Env
-		): Promise<APIInteractionResponse | undefined> {
-				await syncAllStaff(env);
-				return {
-						type: InteractionResponseType.ChannelMessageWithSource,
-						data: {
-								content: "Synced staff roles with the database",
-						},
-				};
-		}
+	async run(
+		_interaction: APIApplicationCommandInteraction,
+		env: Env
+	): Promise<APIInteractionResponse | undefined> {
+		await syncAllStaff(env);
+		return {
+			type: InteractionResponseType.ChannelMessageWithSource,
+			data: {
+				content: "Synced staff roles with the database",
+			},
+		};
+	}
 }
 ```
 
